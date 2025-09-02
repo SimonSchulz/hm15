@@ -66,7 +66,9 @@ export class AuthService {
       dto.login,
       dto.email,
     );
-    const id = await this.commandBus.execute(new CreateUserCommand(dto));
+    const id: string = await this.commandBus.execute(
+      new CreateUserCommand(dto),
+    );
     const user = await this.usersQueryRepository.findByLoginOrEmail(dto.email);
     if (!user) {
       throw new NotFoundException('user not found');
@@ -103,7 +105,7 @@ export class AuthService {
     );
   }
   async confirmRegistration(code: string) {
-    const result = await this.commandBus.execute(
+    const result: boolean = await this.commandBus.execute(
       new SetConfirmationEmailCommand(code),
     );
     if (!result) {
@@ -113,7 +115,7 @@ export class AuthService {
     }
   }
   async resendConfirmationEmail(email: string) {
-    const code = await this.commandBus.execute(
+    const code: string = await this.commandBus.execute(
       new UpdateConfirmationEmailCommand(email),
     );
     if (!code) throw new BadRequestException('email not found');
