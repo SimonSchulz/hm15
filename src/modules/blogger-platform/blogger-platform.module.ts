@@ -28,7 +28,6 @@ import { PostsController } from './posts/controllers/posts.controller';
 import { CommentsQueryRepository } from './comments/infrastructure/repositories/comments.query.repository';
 import { CommentsRepository } from './comments/infrastructure/repositories/comments.repository';
 import { LikesRepository } from './likes/infrasructure/repositories/likes.repository';
-import { LikesService } from './likes/application/likes.service';
 import { CreateBlogUseCase } from './blogs/application/usecases/create-blog.usecase';
 import { UpdateBlogUseCase } from './blogs/application/usecases/update-blog.usecase';
 import { DeleteBlogUseCase } from './blogs/application/usecases/delete-blog.usecase';
@@ -36,12 +35,20 @@ import { CreateCommentUseCase } from './comments/application/usecases/create-com
 import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
 import { DeleteCommentUseCase } from './comments/application/usecases/delete-comment.usecase';
 import { CqrsModule } from '@nestjs/cqrs';
+import { GetLikesInfoHandler } from './likes/application/usecases/get-likes-info.usecase';
+import { GetExtendedLikesInfoHandler } from './likes/application/usecases/get-extended-info.usecase';
+import { UpdateLikeStatusHandler } from './likes/application/usecases/update-like-status';
 
 const blogUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const commentUseCases = [
   CreateCommentUseCase,
   UpdateCommentUseCase,
   DeleteCommentUseCase,
+];
+const likesUseCases = [
+  GetLikesInfoHandler,
+  GetExtendedLikesInfoHandler,
+  UpdateLikeStatusHandler,
 ];
 @Module({
   imports: [
@@ -56,6 +63,7 @@ const commentUseCases = [
   ],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [
+    ...likesUseCases,
     ...blogUseCases,
     ...commentUseCases,
     BlogsQueryRepository,
@@ -65,7 +73,6 @@ const commentUseCases = [
     PostsRepository,
     CommentsQueryRepository,
     CommentsRepository,
-    LikesService,
     LikesRepository,
   ],
   exports: [],

@@ -9,9 +9,9 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { PostService } from '../application/post.service';
-import { LikesService } from '../../likes/application/likes.service';
 import { PostsQueryRepository } from '../infrastructure/repositories/posts.query.repository';
 import { PostInputDto } from '../dto/post.input.dto';
 import { LikesInputDto } from '../../likes/dto/likes.input.dto';
@@ -23,13 +23,14 @@ import { CommentInputDto } from '../../comments/dto/comment.input.dto';
 import { CreateCommentCommand } from '../../comments/application/usecases/create-comment.usecase';
 import { ExtractUserFromRequest } from '../../../../core/decorators/transform/extract-user-from-request.decorator';
 import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
+import { UpdateLikeStatusCommand } from '../../likes/application/commands/likes.commands';
+import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly postsService: PostService,
     private readonly commentsQueryRepository: CommentsQueryRepository,
-    private readonly likesService: LikesService,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
@@ -56,6 +57,7 @@ export class PostsController {
     return this.postsService.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':postId/comments')
   async createCommentByPostId(
     @Param('postId') postId: string,
@@ -70,16 +72,17 @@ export class PostsController {
   async updatePost(@Param('id') id: string, @Body() dto: PostInputDto) {
     await this.postsService.update(id, dto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Put(':postId/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatus(
+    @ExtractUserFromRequest() user: RequestDataEntity,
     @Param('postId') postId: string,
     @Body() dto: LikesInputDto,
-    //@Req() req,
   ) {
-    //const userId = req?.user.id ?? '';
-    await this.likesService.updateLikeStatus(postId, postId, dto.likeStatus);
+    await this.commandBus.execute(
+      new UpdateLikeStatusCommand(user.userId, postId, dto.likeStatus),
+    );
   }
 
   @Delete(':id')

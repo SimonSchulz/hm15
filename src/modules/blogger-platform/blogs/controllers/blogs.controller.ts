@@ -10,6 +10,7 @@ import {
   HttpCode,
   NotFoundException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../infrastructure/repositories/blogs.query.repository';
 import { BlogsQueryParams } from '../dto/blogs-query-params.input-dto';
@@ -22,6 +23,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
 @Controller('blogs')
 export class BlogsController {
   constructor(
@@ -52,12 +54,12 @@ export class BlogsController {
     }
     return this.postsQueryRepository.findPostsByBlogId(blogId, query);
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post()
   createBlog(@Body() dto: BlogInputDto) {
     return this.commandBus.execute(new CreateBlogCommand(dto));
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post(':blogId/posts')
   async createPostByBlogId(
     @Param('blogId') blogId: string,
@@ -69,13 +71,13 @@ export class BlogsController {
     }
     return this.postService.createByBlogId(dto, blogId);
   }
-
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   updateBlog(@Param('id') id: string, @Body() dto: BlogInputDto) {
     return this.commandBus.execute(new UpdateBlogCommand(id, dto));
   }
-
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteBlog(@Param('id') id: string) {
