@@ -48,7 +48,7 @@ export class CommentsController {
   @Put(':commentId/like-status')
   async updateLikeStatus(
     @ExtractUserFromRequest() user: RequestDataEntity,
-    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Param('commentId') commentId: string,
     @Body() likeStatusDto: LikesInputDto,
   ): Promise<void> {
     return this.commandBus.execute(
