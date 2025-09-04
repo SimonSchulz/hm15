@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Put,
   UseGuards,
@@ -35,16 +37,19 @@ export class CommentsController {
   }
   @UseGuards(JwtAuthGuard)
   @Put(':commentId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
     @Param('commentId') commentId: string,
     @Body() updateCommentDto: CommentInputDto,
+    @ExtractUserFromRequest() user: RequestDataEntity,
   ): Promise<void> {
     return this.commandBus.execute(
-      new UpdateCommentCommand(commentId, updateCommentDto),
+      new UpdateCommentCommand(commentId, updateCommentDto, user),
     );
   }
   @UseGuards(JwtAuthGuard)
   @Put(':commentId/like-status')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatus(
     @ExtractUserFromRequest() user: RequestDataEntity,
     @Param('commentId') commentId: string,
@@ -60,7 +65,11 @@ export class CommentsController {
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':commentId')
-  async deleteComment(@Param('commentId') commentId: string): Promise<void> {
-    return this.commandBus.execute(new DeleteCommentCommand(commentId));
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @ExtractUserFromRequest() user: RequestDataEntity,
+  ): Promise<void> {
+    return this.commandBus.execute(new DeleteCommentCommand(commentId, user));
   }
 }
