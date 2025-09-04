@@ -38,8 +38,12 @@ export class PostsController {
   ) {}
 
   @Get()
-  async getPosts(@Query() query: PostsQueryParams) {
-    return this.postsQueryRepository.findAllPosts(query);
+  @UseGuards(JwtOptionalAuthGuard)
+  async getPosts(
+    @Query() query: PostsQueryParams,
+    @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
+  ) {
+    return this.postsQueryRepository.findAllPosts(query, user?.userId);
   }
 
   @Get(':id')
