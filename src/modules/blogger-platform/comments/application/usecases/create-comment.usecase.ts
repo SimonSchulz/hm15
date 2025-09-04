@@ -21,7 +21,6 @@ export class CreateCommentUseCase
 
   async execute(command: CreateCommentCommand): Promise<WithId<CommentEntity>> {
     const { dto, info, postId } = command;
-
     const newComment = new CommentEntity({
       content: dto.content,
       commentatorInfo: {

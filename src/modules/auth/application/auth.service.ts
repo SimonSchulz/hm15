@@ -27,15 +27,15 @@ export class AuthService {
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private readonly refreshJwtService: JwtService,
   ) {}
-  login(userId: string, login: string) {
+  login(userId: string, userLogin: string) {
     const accessToken = this.accessJwtService.sign({
       userId,
-      login,
+      userLogin,
     });
 
     const refreshToken = this.refreshJwtService.sign({
       userId,
-      login,
+      userLogin,
     });
 
     return {
