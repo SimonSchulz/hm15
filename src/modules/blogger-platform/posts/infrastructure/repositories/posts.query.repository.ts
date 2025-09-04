@@ -17,7 +17,7 @@ export class PostsQueryRepository {
     private readonly commandBus: CommandBus,
   ) {}
 
-  async findById(id: string, userId?: string): Promise<PostViewDto> {
+  async findById(id: string, userId?: string): Promise<PostViewDto | boolean> {
     const post = await this.postModel.findById(id).exec();
     if (!post) {
       return false;
