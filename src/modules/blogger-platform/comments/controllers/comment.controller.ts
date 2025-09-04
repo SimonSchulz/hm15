@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseUUIDPipe,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -29,7 +28,7 @@ export class CommentsController {
   @UseGuards(JwtOptionalAuthGuard)
   @Get(':id')
   async getComment(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
     @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
     return this.commentsQueryRepository.findById(id, user?.userId);
@@ -61,9 +60,7 @@ export class CommentsController {
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':commentId')
-  async deleteComment(
-    @Param('commentId', ParseUUIDPipe) commentId: string,
-  ): Promise<void> {
+  async deleteComment(@Param('commentId') commentId: string): Promise<void> {
     return this.commandBus.execute(new DeleteCommentCommand(commentId));
   }
 }
