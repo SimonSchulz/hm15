@@ -4,6 +4,8 @@ import { CommentEntity } from '../../domain/entities/comment.entity';
 import { CommentsRepository } from '../../infrastructure/repositories/comments.repository';
 import { CommentInputDto } from '../../dto/comment.input.dto';
 import { RequestDataEntity } from '../../../../../core/dto/request.data.entity';
+import { CommentsViewDto } from '../../dto/comments.view-dto';
+import { LikesInfo } from '../../../likes/dto/likes-info.dto';
 
 export class CreateCommentCommand {
   constructor(
@@ -15,11 +17,11 @@ export class CreateCommentCommand {
 
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase
-  implements ICommandHandler<CreateCommentCommand, WithId<CommentEntity>>
+  implements ICommandHandler<CreateCommentCommand, CommentsViewDto>
 {
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
-  async execute(command: CreateCommentCommand): Promise<WithId<CommentEntity>> {
+  async execute(command: CreateCommentCommand) {
     const { dto, info, postId } = command;
     const newComment = new CommentEntity({
       content: dto.content,
@@ -30,6 +32,7 @@ export class CreateCommentUseCase
       postId,
     });
 
-    return this.commentsRepository.create(newComment);
+    const result = await this.commentsRepository.create(newComment);
+    return CommentsViewDto.mapToView(result, LikesInfo.defaultValues());
   }
 }
