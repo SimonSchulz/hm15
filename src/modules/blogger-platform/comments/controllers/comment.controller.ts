@@ -18,15 +18,19 @@ import { UpdateLikeStatusCommand } from '../../likes/application/commands/likes.
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../../../../core/decorators/transform/extract-user-from-request.decorator';
 import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
+import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
 @Controller('comments')
 export class CommentsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
-
+  @UseGuards(JwtOptionalAuthGuard)
   @Get(':id')
-  async getComment(@Param('id', ParseUUIDPipe) id: string) {
+  async getComment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ExtractUserFromRequest() user?: RequestDataEntity,
+  ) {
     return this.commentsQueryRepository.findById(id);
   }
   @UseGuards(JwtAuthGuard)

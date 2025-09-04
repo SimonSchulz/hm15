@@ -25,6 +25,7 @@ import { ExtractUserFromRequest } from '../../../../core/decorators/transform/ex
 import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
 import { UpdateLikeStatusCommand } from '../../likes/application/commands/likes.commands';
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
+import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -40,8 +41,12 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPost(@Param('id') id: string) {
-    return this.postsQueryRepository.findById(id);
+  @UseGuards(JwtOptionalAuthGuard)
+  async getPost(
+    @Param('id') id: string,
+    @ExtractUserFromRequest() user?: RequestDataEntity,
+  ) {
+    return this.postsQueryRepository.findById(id, user?.userId);
   }
 
   @Get(':postId/comments')

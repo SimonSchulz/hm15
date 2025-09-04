@@ -17,14 +17,14 @@ export class PostsQueryRepository {
     private readonly commandBus: CommandBus,
   ) {}
 
-  async findById(id: string): Promise<PostViewDto> {
+  async findById(id: string, userId?: string): Promise<PostViewDto> {
     const post = await this.postModel.findById(id).exec();
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
     const extendedLikesInfo: ExtendedLikesInfo = await this.commandBus.execute(
-      new GetExtendedLikesInfoCommand(post.id),
+      new GetExtendedLikesInfoCommand(post.id, userId),
     );
 
     return PostViewDto.mapToView(post, extendedLikesInfo);

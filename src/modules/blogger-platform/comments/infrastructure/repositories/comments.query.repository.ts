@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CommentDocument, CommentModel } from '../schemas/comment.schema';
@@ -16,8 +16,15 @@ export class CommentsQueryRepository {
     private readonly commandBus: CommandBus,
   ) {}
 
-  async findById(id: string) {
-    return this.commentModel.findById(id).lean();
+  async findById(id: string, userId?: string) {
+    const result = await this.commentModel.findById(id);
+    if (!result) {
+      throw new NotFoundException('Comment not found');
+    }
+    const likesInfo: LikesInfo = await this.commandBus.execute(
+      new GetLikesInfoCommand(id, userId),
+    );
+    return CommentsViewDto.mapToView(result, likesInfo);
   }
 
   async findCommentsByPostId(postId: string, query: CommentsQueryParams) {
