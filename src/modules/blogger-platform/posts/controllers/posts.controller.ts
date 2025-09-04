@@ -90,6 +90,10 @@ export class PostsController {
     @Body() dto: CommentInputDto,
     @ExtractUserFromRequest() user: RequestDataEntity,
   ): Promise<void> {
+    const post = await this.postsQueryRepository.findById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
     return this.commandBus.execute(new CreateCommentCommand(dto, user, postId));
   }
 
