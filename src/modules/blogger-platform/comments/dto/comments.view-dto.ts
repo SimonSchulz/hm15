@@ -19,7 +19,7 @@ export class CommentsViewDto {
     dto.id = comment._id.toString();
     dto.content = comment.content;
     dto.commentatorInfo = comment.commentatorInfo;
-    dto.createdAt = new Date().toISOString();
+    dto.createdAt = comment.createdAt;
     dto.likesInfo = likesInfo;
     return dto;
   }

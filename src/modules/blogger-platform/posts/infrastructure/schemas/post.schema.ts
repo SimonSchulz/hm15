@@ -17,7 +17,7 @@ export class PostModel {
   @Prop({ required: true })
   blogId!: string;
 
-  @Prop({ required: true, default: () => new Date().toISOString() })
+  @Prop({ required: true })
   createdAt!: string;
   @Prop()
   blogName!: string;

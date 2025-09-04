@@ -24,7 +24,7 @@ export class CommentModel {
   @Prop({ required: true })
   postId!: string;
 
-  @Prop({ required: true, default: () => new Date().toISOString() })
+  @Prop({ required: true })
   createdAt!: string;
 }
 
