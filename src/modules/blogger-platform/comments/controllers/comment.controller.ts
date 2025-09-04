@@ -31,7 +31,7 @@ export class CommentsController {
     @Param('id', ParseUUIDPipe) id: string,
     @ExtractUserFromRequest() user?: RequestDataEntity,
   ) {
-    return this.commentsQueryRepository.findById(id);
+    return this.commentsQueryRepository.findById(id, user?.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Put(':commentId')

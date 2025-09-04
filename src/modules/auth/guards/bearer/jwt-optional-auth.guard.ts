@@ -9,7 +9,7 @@ export class JwtOptionalAuthGuard extends AuthGuard('jwt') {
   }
   handleRequest<TUser = RequestDataEntity>(err: any, user: TUser) {
     if (err || !user) {
-      return null as TUser;
+      return undefined;
     } else {
       return user;
     }
