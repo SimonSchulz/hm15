@@ -19,7 +19,7 @@ export class CommentsQueryRepository {
   async findById(id: string, userId?: string) {
     const result = await this.commentModel.findById(id);
     if (!result) {
-      throw new NotFoundException('Comment not found');
+      return false;
     }
     const likesInfo: LikesInfo = await this.commandBus.execute(
       new GetLikesInfoCommand(id, userId),
