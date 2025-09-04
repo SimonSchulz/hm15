@@ -99,6 +99,7 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('id') id: string) {
     await this.postsService.delete(id);
