@@ -27,6 +27,7 @@ import { UpdateLikeStatusCommand } from '../../likes/application/commands/likes.
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserIfExistsFromRequest } from '../../../../core/decorators/transform/extract-user-if-exists-from-request.decorator';
+import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -59,6 +60,7 @@ export class PostsController {
   }
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   async createPost(@Body() dto: PostInputDto) {
     return this.postsService.create(dto);
   }
@@ -74,6 +76,7 @@ export class PostsController {
   }
 
   @Put(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(@Param('id') id: string, @Body() dto: PostInputDto) {
     await this.postsService.update(id, dto);
