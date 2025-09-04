@@ -13,6 +13,7 @@ export class CommentModel {
       userId: { type: String, required: true },
       userLogin: { type: String, required: true },
     },
+    _id: false,
     required: true,
   })
   commentatorInfo!: {
