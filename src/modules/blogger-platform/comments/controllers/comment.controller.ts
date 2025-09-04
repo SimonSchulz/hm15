@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../../../../core/decorators/transform/extract-user-from-request.decorator';
 import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
 import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserIfExistsFromRequest } from '../../../../core/decorators/transform/extract-user-if-exists-from-request.decorator';
 @Controller('comments')
 export class CommentsController {
   constructor(
@@ -29,7 +30,7 @@ export class CommentsController {
   @Get(':id')
   async getComment(
     @Param('id', ParseUUIDPipe) id: string,
-    @ExtractUserFromRequest() user?: RequestDataEntity,
+    @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
     return this.commentsQueryRepository.findById(id, user?.userId);
   }

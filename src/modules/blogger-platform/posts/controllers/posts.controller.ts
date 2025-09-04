@@ -26,6 +26,7 @@ import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
 import { UpdateLikeStatusCommand } from '../../likes/application/commands/likes.commands';
 import { JwtAuthGuard } from '../../../auth/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserIfExistsFromRequest } from '../../../../core/decorators/transform/extract-user-if-exists-from-request.decorator';
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -44,7 +45,7 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   async getPost(
     @Param('id') id: string,
-    @ExtractUserFromRequest() user?: RequestDataEntity,
+    @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
     return this.postsQueryRepository.findById(id, user?.userId);
   }
