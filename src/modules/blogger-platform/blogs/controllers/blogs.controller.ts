@@ -24,6 +24,9 @@ import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { BasicAuthGuard } from '../../../auth/guards/basic/basic-auth.guard';
+import { JwtOptionalAuthGuard } from '../../../auth/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserIfExistsFromRequest } from '../../../../core/decorators/transform/extract-user-if-exists-from-request.decorator';
+import { RequestDataEntity } from '../../../../core/dto/request.data.entity';
 @Controller('blogs')
 export class BlogsController {
   constructor(
@@ -44,7 +47,9 @@ export class BlogsController {
   }
 
   @Get(':blogId/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
+    @ExtractUserIfExistsFromRequest() user: RequestDataEntity,
     @Param('blogId') blogId: string,
     @Query() query: PostsQueryParams,
   ) {
@@ -52,7 +57,11 @@ export class BlogsController {
     if (!blog) {
       throw new NotFoundException('Blog not found');
     }
-    return this.postsQueryRepository.findPostsByBlogId(blogId, query);
+    return this.postsQueryRepository.findPostsByBlogId(
+      blogId,
+      query,
+      user.userId,
+    );
   }
   @UseGuards(BasicAuthGuard)
   @Post()

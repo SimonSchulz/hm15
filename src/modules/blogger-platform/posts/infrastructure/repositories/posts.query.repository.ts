@@ -70,6 +70,7 @@ export class PostsQueryRepository {
   async findPostsByBlogId(
     blogId: string,
     query: PostsQueryParams,
+    userId?: string,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     const filter: FilterQuery<PostDocument> = { blogId, deletedAt: null };
 
@@ -86,7 +87,7 @@ export class PostsQueryRepository {
       posts.map(async (post) => {
         const extendedLikesInfo: ExtendedLikesInfo =
           await this.commandBus.execute(
-            new GetExtendedLikesInfoCommand(post.id),
+            new GetExtendedLikesInfoCommand(post.id, userId),
           );
         return PostViewDto.mapToView(post, extendedLikesInfo);
       }),
