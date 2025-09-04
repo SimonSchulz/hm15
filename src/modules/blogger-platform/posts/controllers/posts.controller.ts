@@ -59,13 +59,18 @@ export class PostsController {
     }
     return post;
   }
-
+  @UseGuards(JwtOptionalAuthGuard)
   @Get(':postId/comments')
   async getCommentsByPostId(
     @Param('postId') postId: string,
     @Query() query: CommentsQueryParams,
+    @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
-    return this.commentsQueryRepository.findCommentsByPostId(postId, query);
+    return this.commentsQueryRepository.findCommentsByPostId(
+      postId,
+      query,
+      user?.userId,
+    );
   }
 
   @Post()
