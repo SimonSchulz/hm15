@@ -40,11 +40,13 @@ export class CommentsQueryRepository {
       .limit(query.pageSize);
 
     const totalCount = await this.commentModel.countDocuments(filter).exec();
-    const likesInfo: LikesInfo = await this.commandBus.execute(
-      new GetLikesInfoCommand(postId, userId),
-    );
-    const items = comments.map((comment) =>
-      CommentsViewDto.mapToView(comment, likesInfo),
+    const items = await Promise.all(
+      comments.map(async (comment) => {
+        const likesInfo: LikesInfo = await this.commandBus.execute(
+          new GetLikesInfoCommand(comment.id, userId), // ✅ теперь для конкретного коммента
+        );
+        return CommentsViewDto.mapToView(comment, likesInfo);
+      }),
     );
 
     return PaginatedViewDto.mapToView({

@@ -66,6 +66,10 @@ export class PostsController {
     @Query() query: CommentsQueryParams,
     @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
+    const post = await this.postsQueryRepository.findById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
     return this.commentsQueryRepository.findCommentsByPostId(
       postId,
       query,
