@@ -20,7 +20,7 @@ export class PostsQueryRepository {
   async findById(id: string, userId?: string): Promise<PostViewDto> {
     const post = await this.postModel.findById(id).exec();
     if (!post) {
-      throw new NotFoundException('Post not found');
+      return false;
     }
 
     const extendedLikesInfo: ExtendedLikesInfo = await this.commandBus.execute(
