@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Put,
   UseGuards,
@@ -33,7 +34,14 @@ export class CommentsController {
     @Param('id') id: string,
     @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
-    return this.commentsQueryRepository.findById(id, user?.userId);
+    const comment = await this.commentsQueryRepository.findById(
+      id,
+      user?.userId,
+    );
+    if (!comment) {
+      throw new NotFoundException('Could not find comment');
+    }
+    return comment;
   }
   @UseGuards(JwtAuthGuard)
   @Put(':commentId')

@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { PostService } from '../application/post.service';
 import { PostsQueryRepository } from '../infrastructure/repositories/posts.query.repository';
@@ -52,7 +53,11 @@ export class PostsController {
     @Param('id') id: string,
     @ExtractUserIfExistsFromRequest() user?: RequestDataEntity,
   ) {
-    return this.postsQueryRepository.findById(id, user?.userId);
+    const post = await this.postsQueryRepository.findById(id, user?.userId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
   }
 
   @Get(':postId/comments')
