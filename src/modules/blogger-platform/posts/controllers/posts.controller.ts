@@ -103,6 +103,7 @@ export class PostsController {
   async updatePost(@Param('id') id: string, @Body() dto: PostInputDto) {
     await this.postsService.update(id, dto);
   }
+
   @UseGuards(JwtAuthGuard)
   @Put(':postId/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
