@@ -4,21 +4,23 @@ import { UsersQueryRepository } from './infrastructure/repositories/users.query.
 import { UsersRepository } from './infrastructure/repositories/users.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModel, UserSchema } from './infrastructure/schemas/user.schema';
-import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/application/auth.service';
 import { BcryptService } from '../auth/application/bcrypt.service';
 import { NodemailerService } from '../auth/application/nodemailer.service';
 import { AuthController } from '../auth/controllers/auth.controller';
 import { LocalStrategy } from '../auth/guards/local/local.strategy';
 import { JwtStrategy } from '../auth/guards/bearer/jwt.strategy';
+import { CqrsModule } from '@nestjs/cqrs';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SessionsModule } from '../sessions/session.module';
+import { RefreshTokenModule } from '../auth/refresh.token.module';
 import { PassportModule } from '@nestjs/passport';
-import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from './constants/auth-tokens.inject-constants';
 import { CreateUserHandler } from './application/usecases/create-user.usecase';
+import { DeleteUserHandler } from './application/usecases/delete-user.usecase';
 import { SetConfirmationEmailHandler } from './application/usecases/set-confirmation-email.usecase';
 import { SetNewPasswordHandler } from './application/usecases/set-new-password.usecase';
 import { UpdateConfirmationEmailHandler } from './application/usecases/update-confirmation-email.usecase';
-import { DeleteUserHandler } from './application/usecases/delete-user.usecase';
-import { CqrsModule } from '@nestjs/cqrs';
+import { JwtModule } from '@nestjs/jwt';
 
 const userUseCases = [
   CreateUserHandler,
@@ -27,29 +29,27 @@ const userUseCases = [
   SetNewPasswordHandler,
   UpdateConfirmationEmailHandler,
 ];
+
 @Module({
   imports: [
     CqrsModule,
+    SessionsModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forFeature([{ name: UserModel.name, schema: UserSchema }]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: 'access-token-secret',
-      signOptions: { expiresIn: '6m' },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('ACCESS_TOKEN_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('AC_TIME'),
+        },
+      }),
     }),
   ],
   controllers: [UsersController, AuthController],
   providers: [
     ...userUseCases,
-    {
-      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-      useFactory: (): JwtService => {
-        return new JwtService({
-          secret: 'refresh-token-secret',
-          signOptions: { expiresIn: '10m' },
-        });
-      },
-      inject: [],
-    },
     UsersQueryRepository,
     UsersRepository,
     AuthService,
@@ -58,6 +58,6 @@ const userUseCases = [
     LocalStrategy,
     JwtStrategy,
   ],
-  exports: [MongooseModule, UsersQueryRepository, UsersRepository],
+  exports: [MongooseModule, UsersQueryRepository, UsersRepository, JwtModule],
 })
 export class UsersModule {}

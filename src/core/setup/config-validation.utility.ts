@@ -10,7 +10,7 @@ export const configValidationUtility = {
       throw new Error('Validation failed: ' + sortedMessages);
     }
   },
-  convertToBoolean(value: string | undefined) {
+  convertToBoolean(value: string) {
     const trimmedValue = value?.trim();
     if (trimmedValue === 'true') return true;
     if (trimmedValue === '1') return true;

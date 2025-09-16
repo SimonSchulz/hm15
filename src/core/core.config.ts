@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   Matches,
 } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
@@ -40,19 +41,19 @@ export class CoreConfig {
       configValidationUtility.getEnumValues(Environments).join(', '),
   })
   env?: Environments;
-
+  @IsOptional()
   @IsBoolean({
     message:
       'Set Env variable IS_SWAGGER_ENABLED, example: true, available values: true, false',
   })
   isSwaggerEnabled?: boolean;
-
+  @IsOptional()
   @IsBoolean({
     message:
       'Set Env variable INCLUDE_TESTING_MODULE, example: true, available values: true, false, 0, 1',
   })
   includeTestingModule?: boolean;
-
+  @IsOptional()
   @IsBoolean({
     message:
       'Set Env variable SEND_INTERNAL_SERVER_ERROR_DETAILS, example: true, available values: true, false, 0, 1',
@@ -68,13 +69,13 @@ export class CoreConfig {
       mongoURI: configService.get<string>('MONGO_URI'),
       env: configService.get<Environments>('NODE_ENV'),
       isSwaggerEnabled: configValidationUtility.convertToBoolean(
-        configService.get('IS_SWAGGER_ENABLED'),
+        configService.get('IS_SWAGGER_ENABLED') ?? 'false',
       ),
       includeTestingModule: configValidationUtility.convertToBoolean(
-        configService.get('INCLUDE_TESTING_MODULE'),
+        configService.get('INCLUDE_TESTING_MODULE') ?? 'false',
       ),
       sendInternalServerErrorDetails: configValidationUtility.convertToBoolean(
-        configService.get('SEND_INTERNAL_SERVER_ERROR_DETAILS'),
+        configService.get('SEND_INTERNAL_SERVER_ERROR_DETAILS') ?? 'false',
       ),
     };
 

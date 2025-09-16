@@ -38,7 +38,15 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { GetLikesInfoHandler } from './likes/application/usecases/get-likes-info.usecase';
 import { GetExtendedLikesInfoHandler } from './likes/application/usecases/get-extended-info.usecase';
 import { UpdateLikeStatusHandler } from './likes/application/usecases/update-like-status';
-
+import {
+  SessionDevice,
+  SessionDeviceSchema,
+} from '../sessions/infrastructure/schemas/session-device.schema';
+import { SessionDevicesQueryRepository } from '../sessions/infrastructure/repositories/session.query.repository';
+import { SessionDevicesRepository } from '../sessions/infrastructure/repositories/session.repository';
+import { RefreshTokenGuard } from '../auth/guards/bearer/refresh.guard';
+import { SessionsModule } from '../sessions/session.module';
+import { RefreshTokenModule } from '../auth/refresh.token.module';
 const blogUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const commentUseCases = [
   CreateCommentUseCase,
@@ -50,14 +58,20 @@ const likesUseCases = [
   GetExtendedLikesInfoHandler,
   UpdateLikeStatusHandler,
 ];
+
 @Module({
   imports: [
     CqrsModule,
+    SessionsModule,
+    UsersModule,
     MongooseModule.forFeature([{ name: BlogModel.name, schema: BlogSchema }]),
     MongooseModule.forFeature([{ name: PostModel.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: LikeModel.name, schema: LikeSchema }]),
     MongooseModule.forFeature([
       { name: CommentModel.name, schema: CommentSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: SessionDevice.name, schema: SessionDeviceSchema },
     ]),
     UsersModule,
   ],
@@ -74,7 +88,10 @@ const likesUseCases = [
     CommentsQueryRepository,
     CommentsRepository,
     LikesRepository,
+    SessionDevicesQueryRepository,
+    SessionDevicesRepository,
+    RefreshTokenGuard,
   ],
-  exports: [],
+  exports: [RefreshTokenGuard],
 })
 export class BloggerPlatformModule {}

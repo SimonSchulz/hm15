@@ -8,9 +8,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from './modules/testing/testing.module';
 import { UsersModule } from './modules/users/users.module';
 import { BloggerPlatformModule } from './modules/blogger-platform/blogger-platform.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { RefreshTokenModule } from './modules/auth/refresh.token.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10,
+        limit: 5,
+      },
+    ]),
+    RefreshTokenModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URI'),

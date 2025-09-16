@@ -5,7 +5,9 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UnauthorizedException,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -19,10 +21,19 @@ import { ResendingInputDto } from '../dto/resending.input-dto';
 import { NewPasswordInputDto } from '../dto/new-password.input-dto';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { RequestDataEntity } from '../../../core/dto/request.data.entity';
-import type { Response } from 'express';
+import { RefreshTokenGuard } from '../guards/bearer/refresh.guard';
+import { CurrentDevice } from '../../../core/decorators/transform/extract-device-from-token';
+import { CommandBus } from '@nestjs/cqrs';
+import { RefreshTokenCommand } from '../application/usecases/refresh-token.usecase';
+import { TokensDto } from '../dto/tokens-dto';
+import { LogoutCommand } from '../application/usecases/logout.usecase';
+import type { Request, Response } from 'express';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -72,17 +83,26 @@ export class AuthController {
     return this.authService.getUserData(user.userId);
   }
 
-  // @Post('refresh-token')
-  // @UseGuards(RefreshTokenGuard)
-  // async refreshToken(@ExtractUserFromRequest() user: RequestDataEntity) {
-  //   return this.authService.refreshToken(user);
-  // }
-
-  // @Post('logout')
-  // @UseGuards(RefreshTokenGuard)
-  // async logout(@ExtractUserFromRequest() user: RequestDataEntity) {
-  //   return this.authService.logout(user);
-  // }
+  @Post('refresh-token')
+  @UseGuards(RefreshTokenGuard)
+  async refreshToken(
+    @CurrentDevice() device: { userId: string; deviceId: string },
+  ): Promise<TokensDto> {
+    return await this.commandBus.execute(
+      new RefreshTokenCommand(device.userId, device.deviceId),
+    );
+  }
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RefreshTokenGuard)
+  async logout(@Req() req: Request) {
+    const cookies = req.cookies as { refreshToken?: string } | undefined;
+    const refreshToken = cookies?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+    await this.commandBus.execute(new LogoutCommand(refreshToken));
+  }
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)

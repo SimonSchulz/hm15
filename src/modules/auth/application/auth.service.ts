@@ -15,7 +15,7 @@ import { SetNewPasswordCommand } from '../../users/application/usecases/set-new-
 import { SetConfirmationEmailCommand } from '../../users/application/usecases/set-confirmation-email.usecase';
 import { UpdateConfirmationEmailCommand } from '../../users/application/usecases/update-confirmation-email.usecase';
 import { CreateUserCommand } from '../../users/application/usecases/create-user.usecase';
-import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../users/constants/auth-tokens.inject-constants';
+import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../refresh.token.module';
 @Injectable()
 export class AuthService {
   constructor(
@@ -125,4 +125,5 @@ export class AuthService {
       emailExamples.registrationEmail,
     );
   }
+  async setNewRefreshToken() {}
 }
