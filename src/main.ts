@@ -6,17 +6,11 @@ import { UniversalExceptionFilter } from './core/exeptions/filters/domain-except
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  // создаём временный контекст для ConfigService
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const configService = appContext.get(ConfigService);
   const coreConfig = CoreConfig.create(configService);
   await appContext.close();
-
-  // собираем модуль с учётом coreConfig
-  const dynamicModule = await AppModule.forRoot(coreConfig);
-
-  // теперь создаём приложение
-  const app = await NestFactory.create(dynamicModule);
+  const app = await NestFactory.create(AppModule.forRoot(coreConfig));
   app.enableCors();
   appSetup(app);
   app.useGlobalFilters(new UniversalExceptionFilter());

@@ -72,7 +72,7 @@ export class CoreConfig {
         configService.get('IS_SWAGGER_ENABLED') ?? 'false',
       ),
       includeTestingModule: configValidationUtility.convertToBoolean(
-        configService.get('INCLUDE_TESTING_MODULE') ?? 'false',
+        configService.get('INCLUDE_TESTING_MODULE') ?? 'true',
       ),
       sendInternalServerErrorDetails: configValidationUtility.convertToBoolean(
         configService.get('SEND_INTERNAL_SERVER_ERROR_DETAILS') ?? 'false',

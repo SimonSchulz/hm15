@@ -10,17 +10,14 @@ export const configValidationUtility = {
       throw new Error('Validation failed: ' + sortedMessages);
     }
   },
-  convertToBoolean(value: string) {
-    const trimmedValue = value?.trim();
-    if (trimmedValue === 'true') return true;
-    if (trimmedValue === '1') return true;
-    if (trimmedValue === 'enabled') return true;
-    if (trimmedValue === 'false') return false;
-    if (trimmedValue === '0') return false;
-    if (trimmedValue === 'disabled') return false;
-
-    return null;
+  convertToBoolean(value: string | undefined): boolean {
+    if (!value) return false;
+    const trimmedValue = value.trim().toLowerCase();
+    if (['true', '1', 'enabled'].includes(trimmedValue)) return true;
+    if (['false', '0', 'disabled'].includes(trimmedValue)) return false;
+    return false;
   },
+
   getEnumValues<T extends Record<string, string>>(enumObj: T): string[] {
     return Object.values(enumObj);
   },

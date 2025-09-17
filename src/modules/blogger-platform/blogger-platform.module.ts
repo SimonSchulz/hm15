@@ -46,7 +46,6 @@ import { SessionDevicesQueryRepository } from '../sessions/infrastructure/reposi
 import { SessionDevicesRepository } from '../sessions/infrastructure/repositories/session.repository';
 import { RefreshTokenGuard } from '../auth/guards/bearer/refresh.guard';
 import { SessionsModule } from '../sessions/session.module';
-import { RefreshTokenModule } from '../auth/refresh.token.module';
 const blogUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const commentUseCases = [
   CreateCommentUseCase,
