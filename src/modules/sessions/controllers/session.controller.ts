@@ -15,10 +15,11 @@ import { GetAllSessionsQuery } from '../application/query/get-all-sessions.useca
 import { DeleteOtherSessionsCommand } from '../application/session-usecases/delete-other-sessions.usecase';
 import { GetSessionByDeviceQuery } from '../application/query/get-session-by-device.usecase';
 import { DeleteSessionByDeviceCommand } from '../application/session-usecases/delete-session.usecase';
-import { RefreshTokenPayload } from '../dto/refresh-token.interface';
 import { SessionDevice } from '../infrastructure/schemas/session-device.schema';
 import { CurrentDevice } from '../../../core/decorators/transform/extract-device-from-token';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('security/devices')
 @UseGuards(RefreshTokenGuard)
 export class SessionsController {
