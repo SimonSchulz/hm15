@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,7 +14,9 @@ import { SetNewPasswordCommand } from '../../users/application/usecases/set-new-
 import { SetConfirmationEmailCommand } from '../../users/application/usecases/set-confirmation-email.usecase';
 import { UpdateConfirmationEmailCommand } from '../../users/application/usecases/update-confirmation-email.usecase';
 import { CreateUserCommand } from '../../users/application/usecases/create-user.usecase';
-import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../refresh.token.module';
+import { RefreshTokenService } from './refresh-token.service';
+
+import { randomUUID } from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -24,18 +25,18 @@ export class AuthService {
     private readonly bcryptService: BcryptService,
     private readonly nodemailerService: NodemailerService,
     private readonly accessJwtService: JwtService,
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private readonly refreshJwtService: JwtService,
+    private readonly refreshService: RefreshTokenService,
   ) {}
   login(userId: string, userLogin: string) {
     const accessToken = this.accessJwtService.sign({
       userId,
       userLogin,
     });
+    const deviceId = randomUUID();
 
-    const refreshToken = this.refreshJwtService.sign({
+    const refreshToken = this.refreshService.sign({
       userId,
-      userLogin,
+      deviceId,
     });
 
     return {
@@ -125,5 +126,4 @@ export class AuthService {
       emailExamples.registrationEmail,
     );
   }
-  async setNewRefreshToken() {}
 }

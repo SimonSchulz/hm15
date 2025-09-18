@@ -1,17 +1,24 @@
-import { CoreConfig } from './core/core.config';
-import { configModule } from './config-dynamic-module';
-import { DynamicModule, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { ConfigService } from '@nestjs/config';
-import { AppService } from './app.service';
+import { Module, DynamicModule } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { CoreConfig } from './core/core.config';
 import { TestingModule } from './modules/testing/testing.module';
 import { UsersModule } from './modules/users/users.module';
 import { BloggerPlatformModule } from './modules/blogger-platform/blogger-platform.module';
-import { RefreshTokenModule } from './modules/auth/refresh.token.module';
-
+import { configModule } from './config-dynamic-module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     MongooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URI'),
@@ -21,10 +28,15 @@ import { RefreshTokenModule } from './modules/auth/refresh.token.module';
     UsersModule,
     BloggerPlatformModule,
     configModule,
-    RefreshTokenModule.forRoot(),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {
   static forRoot(coreConfig: CoreConfig): DynamicModule {

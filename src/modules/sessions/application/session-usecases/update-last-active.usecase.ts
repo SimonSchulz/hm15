@@ -5,7 +5,7 @@ import { SessionDevicesRepository } from '../../infrastructure/repositories/sess
 export class UpdateLastActiveDateCommand implements ICommand {
   constructor(
     public readonly deviceId: string,
-    public readonly iat: string,
+    public readonly iat: Date,
   ) {}
 }
 

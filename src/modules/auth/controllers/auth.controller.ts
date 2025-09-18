@@ -28,17 +28,24 @@ import { RefreshTokenCommand } from '../application/usecases/refresh-token.useca
 import { TokensDto } from '../dto/tokens-dto';
 import { LogoutCommand } from '../application/usecases/logout.usecase';
 import type { Request, Response } from 'express';
+import { RefreshTokenService } from '../application/refresh-token.service';
+import { CreateSessionCommand } from '../../sessions/application/session-usecases/create-session.usecase';
+import { DeleteSessionByDeviceCommand } from '../../sessions/application/session-usecases/delete-session.usecase';
+import { UpdateLastActiveDateCommand } from '../../sessions/application/session-usecases/update-last-active.usecase';
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly commandBus: CommandBus,
+    private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(
+  async login(
+    @Req() req: Request,
     @ExtractUserFromRequest() user: RequestDataEntity,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -46,11 +53,24 @@ export class AuthController {
       user.userId,
       user.userLogin,
     );
+    const payload = this.refreshTokenService.verify(refreshToken);
+
+    const ip = req.ip!;
+    const title = req.headers['user-agent']?.toString() || user.userLogin;
+    const lastActivate = new Date(payload.iat);
+    await this.commandBus.execute(
+      new CreateSessionCommand(
+        payload.userId,
+        payload.deviceId,
+        ip,
+        title,
+        lastActivate,
+      ),
+    );
+
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true, // только https
-      sameSite: 'strict',
-      maxAge: 10 * 60 * 1000, // 10 минут
+      secure: true,
     });
 
     return { accessToken };
@@ -87,21 +107,39 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   async refreshToken(
     @CurrentDevice() device: { userId: string; deviceId: string },
+    @Res({ passthrough: true }) res: Response,
   ): Promise<TokensDto> {
-    return await this.commandBus.execute(
+    const tokens: TokensDto = await this.commandBus.execute(
       new RefreshTokenCommand(device.userId, device.deviceId),
     );
+    const payload = this.refreshTokenService.verify(tokens.refreshToken);
+    const lastActivate = new Date(payload.iat);
+    await this.commandBus.execute(
+      new UpdateLastActiveDateCommand(device.userId, lastActivate),
+    );
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return tokens;
   }
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RefreshTokenGuard)
-  async logout(@Req() req: Request) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const cookies = req.cookies as { refreshToken?: string } | undefined;
     const refreshToken = cookies?.refreshToken;
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token not found');
     }
-    await this.commandBus.execute(new LogoutCommand(refreshToken));
+    const deviceId: string = await this.commandBus.execute(
+      new LogoutCommand(refreshToken),
+    );
+    await this.commandBus.execute(new DeleteSessionByDeviceCommand(deviceId));
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: true,
+    });
   }
 
   @Post('new-password')

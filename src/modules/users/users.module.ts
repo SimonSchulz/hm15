@@ -13,7 +13,6 @@ import { JwtStrategy } from '../auth/guards/bearer/jwt.strategy';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SessionsModule } from '../sessions/session.module';
-import { RefreshTokenModule } from '../auth/refresh.token.module';
 import { PassportModule } from '@nestjs/passport';
 import { CreateUserHandler } from './application/usecases/create-user.usecase';
 import { DeleteUserHandler } from './application/usecases/delete-user.usecase';
@@ -21,6 +20,7 @@ import { SetConfirmationEmailHandler } from './application/usecases/set-confirma
 import { SetNewPasswordHandler } from './application/usecases/set-new-password.usecase';
 import { UpdateConfirmationEmailHandler } from './application/usecases/update-confirmation-email.usecase';
 import { JwtModule } from '@nestjs/jwt';
+import { RefreshTokenService } from '../auth/application/refresh-token.service';
 
 const userUseCases = [
   CreateUserHandler,
@@ -57,7 +57,14 @@ const userUseCases = [
     NodemailerService,
     LocalStrategy,
     JwtStrategy,
+    RefreshTokenService,
   ],
-  exports: [MongooseModule, UsersQueryRepository, UsersRepository, JwtModule],
+  exports: [
+    MongooseModule,
+    UsersQueryRepository,
+    UsersRepository,
+    JwtModule,
+    RefreshTokenService,
+  ],
 })
 export class UsersModule {}

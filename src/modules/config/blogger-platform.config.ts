@@ -26,10 +26,10 @@ export class BloggerPlatformConfig {
   accessTokenSecret: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.accessTokenExpireIn = this.configService.get<string>('AC_TIME', '5s');
+    this.accessTokenExpireIn = this.configService.get<string>('AC_TIME', '10s');
     this.refreshTokenExpireIn = this.configService.get<string>(
       'RF_TIME',
-      '10s',
+      '20s',
     );
     this.refreshTokenSecret = this.configService.get<string>(
       'REFRESH_TOKEN_SECRET',

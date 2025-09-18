@@ -3,7 +3,6 @@ import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { BloggerPlatformConfig } from '../../../config/blogger-platform.config';
 import { SessionDevicesQueryRepository } from '../../../sessions/infrastructure/repositories/session.query.repository';
-import { SessionDevicesRepository } from '../../../sessions/infrastructure/repositories/session.repository';
 import { TokensDto } from '../../dto/tokens-dto';
 
 export class RefreshTokenCommand implements ICommand {
@@ -20,7 +19,6 @@ export class RefreshTokenHandler
   constructor(
     private readonly jwtService: JwtService,
     private readonly sessionDevicesQueryRepository: SessionDevicesQueryRepository,
-    private readonly sessionDevicesRepository: SessionDevicesRepository,
     private readonly config: BloggerPlatformConfig,
   ) {}
 
@@ -52,17 +50,6 @@ export class RefreshTokenHandler
         expiresIn: this.config.refreshTokenExpireIn,
       },
     );
-
-    const decoded: unknown = this.jwtService.decode(newRefreshToken);
-
-    if (!decoded || typeof decoded !== 'object' || !('iat' in decoded)) {
-      throw new Error("Can't extract issuedAt from new refresh token");
-    }
-
-    const iat = new Date((decoded as { iat: number }).iat * 1000).toISOString();
-
-    await this.sessionDevicesRepository.updateLastActiveDate(deviceId, iat);
-
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,

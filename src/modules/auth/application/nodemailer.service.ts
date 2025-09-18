@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
-import * as process from 'node:process';
 import type { SendMailOptions } from 'nodemailer';
 
 @Injectable()

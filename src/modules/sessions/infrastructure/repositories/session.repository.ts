@@ -24,13 +24,14 @@ export class SessionDevicesRepository {
       created.deviceId,
       created.ip,
       created.title,
+      created.lastActiveDate,
     );
   }
 
-  async updateLastActiveDate(deviceId: string, iat: string): Promise<void> {
+  async updateLastActiveDate(deviceId: string, iat: Date): Promise<void> {
     await this.sessionDeviceModel.updateOne(
       { deviceId },
-      { $set: { lastActiveDate: new Date(iat) } },
+      { $set: { lastActiveDate: iat } },
     );
   }
 

@@ -9,6 +9,7 @@ export class CreateSessionCommand implements ICommand {
     public readonly deviceId: string,
     public readonly ip: string,
     public readonly title: string,
+    public readonly lastActiveDate: Date,
   ) {}
 }
 
@@ -20,8 +21,14 @@ export class CreateSessionHandler
   constructor(private readonly repository: SessionDevicesRepository) {}
 
   async execute(command: CreateSessionCommand): Promise<SessionDeviceEntity> {
-    const { userId, deviceId, ip, title } = command;
-    const session = new SessionDeviceEntity(userId, deviceId, ip, title);
+    const { userId, deviceId, ip, title, lastActiveDate } = command;
+    const session = new SessionDeviceEntity(
+      userId,
+      deviceId,
+      ip,
+      title,
+      lastActiveDate,
+    );
     return this.repository.create(session);
   }
 }

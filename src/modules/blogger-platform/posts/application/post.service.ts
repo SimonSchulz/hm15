@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { WithId } from 'mongodb';
 import { PostsRepository } from '../infrastructure/repositories/post.repository';
 import { PostInputDto } from '../dto/post.input.dto';
 import { Post } from '../domain/entities/post.entity';

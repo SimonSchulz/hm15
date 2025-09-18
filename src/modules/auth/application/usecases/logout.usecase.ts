@@ -1,7 +1,6 @@
 import { ICommand, ICommandHandler, CommandHandler } from '@nestjs/cqrs';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SessionDevicesRepository } from '../../../sessions/infrastructure/repositories/session.repository';
 import { BloggerPlatformConfig } from '../../../config/blogger-platform.config';
 
 export class LogoutCommand implements ICommand {
@@ -9,10 +8,9 @@ export class LogoutCommand implements ICommand {
 }
 
 @CommandHandler(LogoutCommand)
-export class LogoutHandler implements ICommandHandler<LogoutCommand> {
+export class LogoutHandler implements ICommandHandler<LogoutCommand, string> {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly sessionDevicesRepository: SessionDevicesRepository,
     private readonly config: BloggerPlatformConfig,
   ) {}
 
@@ -31,8 +29,6 @@ export class LogoutHandler implements ICommandHandler<LogoutCommand> {
     } catch {
       throw new UnauthorizedException('Invalid refresh token provided');
     }
-
-    await this.sessionDevicesRepository.deleteByDeviceId(payload.deviceId);
     return payload.deviceId;
   }
 }

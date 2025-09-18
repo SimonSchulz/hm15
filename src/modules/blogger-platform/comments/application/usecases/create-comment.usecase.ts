@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { WithId } from 'mongodb';
 import { CommentEntity } from '../../domain/entities/comment.entity';
 import { CommentsRepository } from '../../infrastructure/repositories/comments.repository';
 import { CommentInputDto } from '../../dto/comment.input.dto';

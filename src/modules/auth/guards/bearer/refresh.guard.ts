@@ -1,37 +1,29 @@
-import type { Request } from 'express';
 import {
   CanActivate,
   ExecutionContext,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { SessionDevicesQueryRepository } from '../../../sessions/infrastructure/repositories/session.query.repository';
-import { RefreshTokenPayload } from '../../../sessions/dto/refresh-token.interface';
-import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../refresh.token.module';
+import { RefreshTokenService } from '../../application/refresh-token.service';
+import { RequestWithDevice } from '../../../../core/decorators/transform/extract-device-from-token';
+
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {
   constructor(
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private readonly jwtService: JwtService,
+    private readonly refreshTokenService: RefreshTokenService,
     private readonly sessionDevicesQueryRepo: SessionDevicesQueryRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context.switchToHttp().getRequest<RequestWithDevice>();
     const cookies = req.cookies as { refreshToken?: string } | undefined;
     const token = cookies?.refreshToken;
 
     if (!token) throw new UnauthorizedException('Refresh token missing');
 
     try {
-      const payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        token,
-        {
-          secret: process.env.REFRESH_TOKEN_SECRET,
-        },
-      );
+      const payload = this.refreshTokenService.verify(token);
 
       const session = await this.sessionDevicesQueryRepo.findSessionByDeviceId(
         payload.deviceId,
@@ -45,10 +37,11 @@ export class RefreshTokenGuard implements CanActivate {
         throw new UnauthorizedException('Stale or reused refresh token');
       }
 
-      req.user = {
+      req.deviceInfo = {
         userId: payload.userId,
         deviceId: payload.deviceId,
         iat: payload.iat,
+        exp: payload.exp,
       };
 
       return true;

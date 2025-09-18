@@ -6,7 +6,7 @@ import {
 import { RefreshTokenPayload } from '../../../modules/sessions/dto/refresh-token.interface';
 import type { Request } from 'express';
 
-interface RequestWithDevice extends Request {
+export interface RequestWithDevice extends Request {
   deviceInfo?: RefreshTokenPayload;
 }
 export const CurrentDevice = createParamDecorator(

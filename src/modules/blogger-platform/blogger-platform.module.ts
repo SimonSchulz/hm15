@@ -42,9 +42,6 @@ import {
   SessionDevice,
   SessionDeviceSchema,
 } from '../sessions/infrastructure/schemas/session-device.schema';
-import { SessionDevicesQueryRepository } from '../sessions/infrastructure/repositories/session.query.repository';
-import { SessionDevicesRepository } from '../sessions/infrastructure/repositories/session.repository';
-import { RefreshTokenGuard } from '../auth/guards/bearer/refresh.guard';
 import { SessionsModule } from '../sessions/session.module';
 const blogUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const commentUseCases = [
@@ -61,8 +58,8 @@ const likesUseCases = [
 @Module({
   imports: [
     CqrsModule,
-    SessionsModule,
     UsersModule,
+    SessionsModule,
     MongooseModule.forFeature([{ name: BlogModel.name, schema: BlogSchema }]),
     MongooseModule.forFeature([{ name: PostModel.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: LikeModel.name, schema: LikeSchema }]),
@@ -87,10 +84,7 @@ const likesUseCases = [
     CommentsQueryRepository,
     CommentsRepository,
     LikesRepository,
-    SessionDevicesQueryRepository,
-    SessionDevicesRepository,
-    RefreshTokenGuard,
   ],
-  exports: [RefreshTokenGuard],
+  exports: [],
 })
 export class BloggerPlatformModule {}

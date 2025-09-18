@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SessionDevicesQueryRepository } from './infrastructure/repositories/session.query.repository';
 import { SessionDevicesRepository } from './infrastructure/repositories/session.repository';
@@ -14,6 +14,7 @@ import { DeleteOtherSessionsHandler } from './application/session-usecases/delet
 import { UpdateLastActiveDateHandler } from './application/session-usecases/update-last-active.usecase';
 import { SessionsController } from './controllers/session.controller';
 import { CqrsModule } from '@nestjs/cqrs';
+import { UsersModule } from '../users/users.module';
 
 const sessionUseCases = [
   GetAllSessionsHandler,
@@ -26,6 +27,7 @@ const sessionUseCases = [
 @Module({
   imports: [
     CqrsModule,
+    forwardRef(() => UsersModule),
     MongooseModule.forFeature([
       { name: SessionDevice.name, schema: SessionDeviceSchema },
     ]),
