@@ -1,5 +1,4 @@
-// src/auth/refresh-token.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BloggerPlatformConfig } from '../../config/blogger-platform.config';
@@ -22,6 +21,10 @@ export class RefreshTokenService {
   }
 
   verify(token: string): RefreshTokenPayload {
-    return this.jwtService.verify(token);
+    try {
+      return this.jwtService.verify<RefreshTokenPayload>(token);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 }

@@ -17,6 +17,8 @@ import { GetSessionByDeviceQuery } from '../application/query/get-session-by-dev
 import { DeleteSessionByDeviceCommand } from '../application/session-usecases/delete-session.usecase';
 import { RefreshTokenPayload } from '../dto/refresh-token.interface';
 import { SessionDevice } from '../infrastructure/schemas/session-device.schema';
+import { CurrentDevice } from '../../../core/decorators/transform/extract-device-from-token';
+
 @Controller('security/devices')
 @UseGuards(RefreshTokenGuard)
 export class SessionsController {
@@ -26,10 +28,12 @@ export class SessionsController {
   ) {}
 
   @Get()
-  async getAllSessions(@Req() req: Request) {
-    const payload = req.user as RefreshTokenPayload;
+  async getAllSessions(
+    @Req() req: Request,
+    @CurrentDevice() device: { userId: string; deviceId: string },
+  ) {
     const sessions: SessionDevice[] = await this.queryBus.execute(
-      new GetAllSessionsQuery(payload.userId),
+      new GetAllSessionsQuery(device.userId),
     );
     return sessions.map((s: SessionDevice) => ({
       ip: s.ip,
@@ -41,10 +45,12 @@ export class SessionsController {
 
   @Delete()
   @HttpCode(204)
-  async deleteOtherSessions(@Req() req: Request) {
-    const payload = req.user as RefreshTokenPayload;
+  async deleteOtherSessions(
+    @Req() req: Request,
+    @CurrentDevice() device: { userId: string; deviceId: string },
+  ) {
     await this.commandBus.execute(
-      new DeleteOtherSessionsCommand(payload.userId, payload.deviceId),
+      new DeleteOtherSessionsCommand(device.userId, device.deviceId),
     );
   }
 
@@ -53,15 +59,14 @@ export class SessionsController {
   async deleteByDeviceId(
     @Req() req: Request,
     @Param('deviceId') deviceId: string,
+    @CurrentDevice() device: { userId: string; deviceId: string },
   ) {
-    const payload = req.user as RefreshTokenPayload;
-
     const session: SessionDevice | null = await this.queryBus.execute(
       new GetSessionByDeviceQuery(deviceId),
     );
     if (!session) throw new NotFoundException('Session not found');
 
-    if (session.userId !== payload.userId) {
+    if (session.userId !== device.userId) {
       throw new ForbiddenException('Cannot delete session of another user');
     }
 

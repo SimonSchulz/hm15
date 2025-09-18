@@ -57,7 +57,7 @@ export class AuthController {
 
     const ip = req.ip!;
     const title = req.headers['user-agent']?.toString() || user.userLogin;
-    const lastActivate = new Date(payload.iat);
+    const lastActivate = new Date(payload.iat * 1000);
     await this.commandBus.execute(
       new CreateSessionCommand(
         payload.userId,
@@ -104,24 +104,25 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(RefreshTokenGuard)
   async refreshToken(
     @CurrentDevice() device: { userId: string; deviceId: string },
     @Res({ passthrough: true }) res: Response,
-  ): Promise<TokensDto> {
+  ): Promise<{ accessToken: string }> {
     const tokens: TokensDto = await this.commandBus.execute(
       new RefreshTokenCommand(device.userId, device.deviceId),
     );
     const payload = this.refreshTokenService.verify(tokens.refreshToken);
-    const lastActivate = new Date(payload.iat);
+    const lastActivate = new Date(payload.iat * 1000);
     await this.commandBus.execute(
-      new UpdateLastActiveDateCommand(device.userId, lastActivate),
+      new UpdateLastActiveDateCommand(device.deviceId, lastActivate),
     );
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return tokens;
+    return { accessToken: tokens.accessToken };
   }
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)

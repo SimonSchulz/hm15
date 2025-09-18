@@ -21,6 +21,9 @@ import { SetNewPasswordHandler } from './application/usecases/set-new-password.u
 import { UpdateConfirmationEmailHandler } from './application/usecases/update-confirmation-email.usecase';
 import { JwtModule } from '@nestjs/jwt';
 import { RefreshTokenService } from '../auth/application/refresh-token.service';
+import { RefreshTokenHandler } from '../auth/application/usecases/refresh-token.usecase';
+import { LogoutHandler } from '../auth/application/usecases/logout.usecase';
+import { BloggerPlatformConfig } from '../config/blogger-platform.config';
 
 const userUseCases = [
   CreateUserHandler,
@@ -29,6 +32,7 @@ const userUseCases = [
   SetNewPasswordHandler,
   UpdateConfirmationEmailHandler,
 ];
+const authUseCases = [LogoutHandler, RefreshTokenHandler];
 
 @Module({
   imports: [
@@ -49,7 +53,9 @@ const userUseCases = [
   ],
   controllers: [UsersController, AuthController],
   providers: [
+    BloggerPlatformConfig,
     ...userUseCases,
+    ...authUseCases,
     UsersQueryRepository,
     UsersRepository,
     AuthService,

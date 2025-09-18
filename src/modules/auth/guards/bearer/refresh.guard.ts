@@ -24,7 +24,6 @@ export class RefreshTokenGuard implements CanActivate {
 
     try {
       const payload = this.refreshTokenService.verify(token);
-
       const session = await this.sessionDevicesQueryRepo.findSessionByDeviceId(
         payload.deviceId,
       );
@@ -33,7 +32,7 @@ export class RefreshTokenGuard implements CanActivate {
       const tokenIssuedAt = new Date(payload.iat * 1000).getTime();
       const sessionCreatedAt = new Date(session.lastActiveDate).getTime();
 
-      if (tokenIssuedAt !== sessionCreatedAt) {
+      if (Math.abs(tokenIssuedAt - sessionCreatedAt) > 1000) {
         throw new UnauthorizedException('Stale or reused refresh token');
       }
 
